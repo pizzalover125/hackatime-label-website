@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hackatime Nutrition Label</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Helvetica", "Arial", sans-serif;
+        background: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        width: 100%;
+      }
+
+      .input-section {
+        background: white;
+        padding: 30px;
+        border: 1px solid #e0e0e0;
+        border-radius: 0;
+        box-shadow: none;
+        margin-bottom: 20px;
+      }
+
+      .input-section h2 {
+        margin-bottom: 15px;
+        color: #000;
+        font-weight: 600;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #000;
+        border-radius: 0;
+        font-size: 16px;
+        transition: border-color 0.3s;
+        background: #fff;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #000;
+        box-shadow: inset 0 0 0 1px #000;
+      }
+
+      button {
+        padding: 12px 24px;
+        background: #000;
+        color: white;
+        border: none;
+        border-radius: 0;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+      }
+
+      button:hover {
+        background: #333;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .info-text {
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+      }
+
+      .info-text a {
+        color: #000;
+        text-decoration: underline;
+      }
+
+      .info-text a:hover {
+        color: #333;
+      }
+
+      .nutrition-label {
+        background: white;
+        border: 4px solid black;
+        padding: 0;
+        font-family: "Helvetica", "Arial", sans-serif;
+        box-shadow: none;
+        display: none;
+      }
+
+      .nutrition-label.visible {
+        display: block;
+      }
+
+      .label-title {
+        border-bottom: 8px solid black;
+        padding: 5px 10px;
+      }
+
+      .label-title h1 {
+        font-size: 40px;
+        font-weight: 900;
+        margin: 0;
+      }
+
+      .label-subtitle {
+        border-bottom: 1px solid black;
+        padding: 2px 10px;
+        font-size: 12px;
+      }
+
+      .serving-size {
+        border-bottom: 4px solid black;
+        padding: 5px 10px;
+      }
+
+      .serving-size-text {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .amount-per-serving {
+        border-bottom: 1px solid black;
+        padding: 5px 10px;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+      .calories {
+        border-bottom: 8px solid black;
+        padding: 5px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+
+      .calories-label {
+        font-size: 14px;
+        font-weight: bold;
+      }
+
+      .calories-value {
+        font-size: 36px;
+        font-weight: 900;
+      }
+
+      .daily-value-header {
+        border-bottom: 4px solid black;
+        padding: 2px 10px;
+        text-align: right;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+      .nutrient-row {
+        border-bottom: 1px solid #999;
+        padding: 3px 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .nutrient-row.thick-border {
+        border-bottom: 4px solid black;
+      }
+
+      .nutrient-row.medium-border {
+        border-bottom: 2px solid black;
+      }
+
+      .nutrient-name {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .nutrient-name.indent {
+        padding-left: 20px;
+        font-weight: normal;
+      }
+
+      .nutrient-value {
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      .footer {
+        padding: 10px;
+        font-size: 11px;
+        line-height: 1.4;
+        border-top: 2px solid black;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 0;
+        box-shadow: none;
+        display: none;
+      }
+
+      .loading.visible {
+        display: block;
+      }
+
+      .loading-spinner {
+        border: 3px solid #f0f0f0;
+        border-top: 3px solid #000;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error {
+        background: #fff;
+        border: 2px solid #000;
+        padding: 15px;
+        border-radius: 0;
+        color: #000;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .error.visible {
+        display: block;
+      }
+
+      .download-btn {
+        display: none;
+        margin-top: 20px;
+        width: 100%;
+        padding: 12px 24px;
+        background: #000;
+        color: white;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 500;
+      }
+
+      .download-btn.visible {
+        display: block;
+      }
+
+      .download-btn:hover {
+        background: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="input-section">
+        <h2>Hackatime Nutrition Label Generator</h2>
+        <div class="input-group">
+          <input
+            type="text"
+            id="slackId"
+            placeholder="Enter your Slack ID (e.g., U12345678)"
+          />
+          <button id="generateBtn">Generate Label</button>
+        </div>
+      </div>
+
+      <div class="error" id="error"></div>
+
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>Fetching your coding nutrition facts...</p>
+      </div>
+
+      <div class="nutrition-label" id="nutritionLabel">
+        <div class="label-title">
+          <h1>Coding Facts</h1>
+        </div>
+        <div class="label-subtitle">Amount Per Developer</div>
+        <div class="serving-size">
+          <span class="serving-size-text">Username:</span>
+          <span id="username"></span>
+        </div>
+        <div class="amount-per-serving">ALL-TIME STATISTICS</div>
+        <div class="calories">
+          <span class="calories-label">Total Hours</span>
+          <span class="calories-value" id="totalHours">0</span>
+        </div>
+        <div class="daily-value-header">% Daily Value*</div>
+
+        <div class="nutrient-row medium-border">
+          <span class="nutrient-name">Time Range</span>
+          <span class="nutrient-value" id="timeRange">All Time</span>
+        </div>
+
+        <div class="nutrient-row">
+          <span class="nutrient-name">Total Time</span>
+          <span class="nutrient-value" id="totalTime">0h 0m</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-name">Total Seconds</span>
+          <span class="nutrient-value" id="totalSeconds">0</span>
+        </div>
+
+        <div class="nutrient-row medium-border">
+          <span class="nutrient-name">Top Language</span>
+          <span class="nutrient-value" id="topLanguage">N/A</span>
+        </div>
+        <div class="nutrient-row" id="topLanguageTime">
+          <span class="nutrient-name indent">Time in Top Language</span>
+          <span class="nutrient-value">0h</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-name indent">Languages Used</span>
+          <span class="nutrient-value" id="languageCount">0</span>
+        </div>
+        <div class="nutrient-row medium-border">
+          <span class="nutrient-name indent">% of Total Time</span>
+          <span class="nutrient-value" id="topLanguagePercent">0%</span>
+        </div>
+
+        <div class="nutrient-row">
+          <span class="nutrient-name">2nd Language</span>
+          <span class="nutrient-value" id="secondLanguage">N/A</span>
+        </div>
+        <div class="nutrient-row" id="secondLanguageTime">
+          <span class="nutrient-name indent">Time in 2nd Language</span>
+          <span class="nutrient-value">0h</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-name indent">% of Total Time</span>
+          <span class="nutrient-value" id="secondLanguagePercent">0%</span>
+        </div>
+        <div class="nutrient-row">
+          <span class="nutrient-name">3rd Language</span>
+          <span class="nutrient-value" id="thirdLanguage">N/A</span>
+        </div>
+        <div class="nutrient-row medium-border">
+          <span class="nutrient-name indent">% of Total Time</span>
+          <span class="nutrient-value" id="thirdLanguagePercent">0%</span>
+        </div>
+
+        <div class="footer">
+          <strong>*</strong> Values based on your Hackatime data. Your daily
+          values may be higher or lower depending on your caffeine intake.
+          <br /><br />
+          <strong>Ingredients:</strong> Dedication, Curiosity, Caffeine Late
+          Night Sessions, Hacker Philosophy. <br /><br />
+          Generated from
+          <a href="https://hackatime.hackclub.com" target="_blank">Hackatime</a>
+          data.
+        </div>
+      </div>
+
+      <button class="download-btn" id="downloadBtn">Download as PNG</button>
+    </div>
+
+    <script>
+      const slackIdInput = document.getElementById("slackId");
+      const generateBtn = document.getElementById("generateBtn");
+      const loadingDiv = document.getElementById("loading");
+      const errorDiv = document.getElementById("error");
+      const nutritionLabel = document.getElementById("nutritionLabel");
+      const downloadBtn = document.getElementById("downloadBtn");
+
+      const savedSlackId = localStorage.getItem("hackatimeSlackId");
+      if (savedSlackId) {
+        slackIdInput.value = savedSlackId;
+      }
+
+      generateBtn.addEventListener("click", generateLabel);
+      slackIdInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          generateLabel();
+        }
+      });
+      downloadBtn.addEventListener("click", downloadAsPNG);
+
+      async function generateLabel() {
+        const slackId = slackIdInput.value.trim();
+
+        if (!slackId) {
+          showError("Please enter a Slack ID");
+          return;
+        }
+
+        localStorage.setItem("hackatimeSlackId", slackId);
+
+        hideError();
+        hideLabel();
+        showLoading();
+
+        try {
+          const response = await fetch(
+            `https://hackatime.hackclub.com/api/v1/users/${slackId}/stats`
+          );
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch stats: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log("API Response:", result);
+
+          const stats = result.data || result;
+          const trustFactor = result.trust_factor;
+
+          populateLabel(slackId, stats, trustFactor);
+
+          hideLoading();
+          showLabel();
+          document.getElementById("downloadBtn").classList.add("visible");
+        } catch (error) {
+          hideLoading();
+          showError(
+            `Error: ${error.message}. Please check your Slack ID and try again.`
+          );
+          console.error("Error fetching stats:", error);
+        }
+      }
+
+      function populateLabel(slackId, stats, trustFactor) {
+        console.log("Stats object:", stats);
+
+        document.getElementById("username").textContent =
+          stats.username || slackId;
+
+        const totalSeconds = stats.total_seconds || 0;
+        const totalHours = Math.round(totalSeconds / 3600);
+        document.getElementById("totalHours").textContent =
+          totalHours.toLocaleString();
+
+        document.getElementById("totalTime").textContent =
+          stats.human_readable_total || "0h 0m";
+
+        document.getElementById("totalSeconds").textContent =
+          totalSeconds.toLocaleString();
+
+        if (stats.languages && stats.languages.length > 0) {
+          const topLang = stats.languages[0];
+          document.getElementById("topLanguage").textContent = topLang.name;
+          const langHours = Math.round(topLang.total_seconds / 3600);
+          document
+            .getElementById("topLanguageTime")
+            .querySelector(".nutrient-value").textContent = `${langHours}h`;
+          document.getElementById("languageCount").textContent =
+            stats.languages.length;
+
+          const topLangPercent =
+            totalSeconds > 0
+              ? Math.round((topLang.total_seconds / totalSeconds) * 100)
+              : 0;
+          document.getElementById(
+            "topLanguagePercent"
+          ).textContent = `${topLangPercent}%`;
+
+          if (stats.languages.length > 1) {
+            const secondLang = stats.languages[1];
+            document.getElementById("secondLanguage").textContent =
+              secondLang.name;
+            const secondHours = Math.round(secondLang.total_seconds / 3600);
+            document
+              .getElementById("secondLanguageTime")
+              .querySelector(".nutrient-value").textContent = `${secondHours}h`;
+
+            const secondLangPercent =
+              totalSeconds > 0
+                ? Math.round((secondLang.total_seconds / totalSeconds) * 100)
+                : 0;
+            document.getElementById(
+              "secondLanguagePercent"
+            ).textContent = `${secondLangPercent}%`;
+          } else {
+            document.getElementById("secondLanguage").textContent = "N/A";
+            document
+              .getElementById("secondLanguageTime")
+              .querySelector(".nutrient-value").textContent = "0h";
+            document.getElementById("secondLanguagePercent").textContent = "0%";
+          }
+
+          if (stats.languages.length > 2) {
+            const thirdLang = stats.languages[2];
+            document.getElementById("thirdLanguage").textContent =
+              thirdLang.name;
+
+            const thirdLangPercent =
+              totalSeconds > 0
+                ? Math.round((thirdLang.total_seconds / totalSeconds) * 100)
+                : 0;
+            document.getElementById(
+              "thirdLanguagePercent"
+            ).textContent = `${thirdLangPercent}%`;
+          } else {
+            document.getElementById("thirdLanguage").textContent = "N/A";
+            document.getElementById("thirdLanguagePercent").textContent = "0%";
+          }
+        } else {
+          document.getElementById("topLanguage").textContent = "N/A";
+          document
+            .getElementById("topLanguageTime")
+            .querySelector(".nutrient-value").textContent = "0h";
+          document.getElementById("languageCount").textContent = "0";
+          document.getElementById("topLanguagePercent").textContent = "0%";
+          document.getElementById("secondLanguage").textContent = "N/A";
+          document
+            .getElementById("secondLanguageTime")
+            .querySelector(".nutrient-value").textContent = "0h";
+          document.getElementById("secondLanguagePercent").textContent = "0%";
+          document.getElementById("thirdLanguage").textContent = "N/A";
+          document.getElementById("thirdLanguagePercent").textContent = "0%";
+        }
+
+        document.getElementById("timeRange").textContent =
+          stats.human_readable_range || "All Time";
+      }
+
+      function showLoading() {
+        loadingDiv.classList.add("visible");
+      }
+
+      function hideLoading() {
+        loadingDiv.classList.remove("visible");
+      }
+
+      function showLabel() {
+        nutritionLabel.classList.add("visible");
+      }
+
+      function hideLabel() {
+        nutritionLabel.classList.remove("visible");
+      }
+
+      function showError(message) {
+        errorDiv.textContent = message;
+        errorDiv.classList.add("visible");
+      }
+
+      function hideError() {
+        errorDiv.classList.remove("visible");
+      }
+
+      async function downloadAsPNG() {
+        try {
+          const label = document.getElementById("nutritionLabel");
+
+          const canvas = await html2canvas(label, {
+            backgroundColor: "#ffffff",
+            scale: 2,
+          });
+
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "hackatime-nutrition-label.png";
+            a.click();
+            URL.revokeObjectURL(url);
+          });
+        } catch (error) {
+          console.error("Error generating PNG:", error);
+          alert("Error generating PNG. Please try again.");
+        }
+      }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </body>
+</html>
